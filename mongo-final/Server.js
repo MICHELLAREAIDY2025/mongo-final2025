@@ -130,7 +130,74 @@ app.post("/api/contact", (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
 });*/
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mongoose = require('mongoose');
+//backend correction
+require("dotenv").config();
+//backend correction
+//const Contact = require("./models/Contact");
 
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(bodyParser.json());
+app.use(cors());
+
+// Connect to MongoDB
+/*mongoose.connect('mongodb://localhost:27017/contactDB', { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected...'))
+  .catch(err => console.log(err));*/
+
+  mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("Could not connect to MongoDB", err));
+
+// Contact Schema
+const contactSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  phone: String,
+  event: String,
+  persons: String,
+  message: String
+});
+
+const Contact = mongoose.model('Contact', contactSchema);
+
+// Routes
+/*app.post('/api/contact', (req, res) => {
+  const newContact = new Contact(req.body);
+  newContact.save()
+    .then(contact => res.json(contact))
+    .catch(err => res.status(400).json({ error: err.message }));
+});*/
+
+app.post("/contact", async (req, res) => {
+  const formData = req.body;
+  console.log("Form data received:", formData);
+
+  try {
+    const newContact = new Contact(formData);
+    await newContact.save();
+    res.status(201).send("Form data saved to MongoDB");
+  } catch (err) {
+    console.error("Error saving form data to MongoDB", err);
+    res.status(500).send("Error saving form data to MongoDB");
+  }
+});
+
+
+
+/*app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});*/
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
 
 
 
